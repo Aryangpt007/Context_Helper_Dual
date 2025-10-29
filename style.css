@@ -1,0 +1,241 @@
+/* RPG Character Chatbot - SillyTavern Extension Styles */
+
+/* Settings Panel */
+.rpg-chatbot-settings .rpg_block {
+    margin-bottom: 10px;
+}
+
+.rpg-chatbot-settings .rpg_block label {
+    display: block;
+    margin-bottom: 5px;
+    font-weight: bold;
+}
+
+.rpg-chatbot-settings .rpg_block small {
+    display: block;
+    color: #888;
+    margin-top: 5px;
+    font-size: 0.9em;
+}
+
+.rpg-chatbot-settings select,
+.rpg-chatbot-settings input[type="text"],
+.rpg-chatbot-settings input[type="password"],
+.rpg-chatbot-settings input[type="number"] {
+    width: 100%;
+    padding: 5px;
+    border: 1px solid #444;
+    background: #222;
+    color: #fff;
+    border-radius: 3px;
+}
+
+.rpg-chatbot-settings ul {
+    margin-left: 20px;
+}
+
+.rpg-chatbot-settings ul li {
+    margin-bottom: 5px;
+}
+
+/* State Panel */
+.rpg-state-panel {
+    background: rgba(0, 0, 0, 0.8);
+    border: 1px solid #444;
+    border-radius: 8px;
+    padding: 10px;
+    margin: 10px;
+    max-width: 600px;
+    position: relative;
+    z-index: 100;
+}
+
+/* Make panel sticky in sheld */
+#sheld .rpg-state-panel {
+    position: sticky;
+    top: 10px;
+    margin-bottom: 10px;
+}
+
+.rpg-state-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 10px;
+    padding-bottom: 5px;
+    border-bottom: 1px solid #444;
+}
+
+.rpg-state-header h4 {
+    margin: 0;
+    color: #4a9eff;
+    font-size: 14px;
+}
+
+.rpg-toggle-btn {
+    background: transparent;
+    border: none;
+    color: #888;
+    cursor: pointer;
+    font-size: 12px;
+    padding: 2px 5px;
+}
+
+.rpg-toggle-btn:hover {
+    color: #fff;
+}
+
+.rpg-state-content {
+    display: block;
+}
+
+.rpg-state-content.collapsed {
+    display: none;
+}
+
+.rpg-state-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 10px;
+    margin-bottom: 10px;
+}
+
+.rpg-state-item {
+    background: rgba(255, 255, 255, 0.05);
+    padding: 8px;
+    border-radius: 4px;
+    border-left: 3px solid #4a9eff;
+}
+
+.rpg-state-label {
+    color: #888;
+    font-size: 11px;
+    text-transform: uppercase;
+    display: block;
+    margin-bottom: 3px;
+}
+
+.rpg-state-value {
+    color: #fff;
+    font-size: 13px;
+    font-weight: bold;
+}
+
+.rpg-state-clothes {
+    background: rgba(255, 255, 255, 0.05);
+    padding: 8px;
+    border-radius: 4px;
+    border-left: 3px solid #ff6b9d;
+}
+
+.rpg-clothes-list {
+    margin-top: 5px;
+}
+
+.rpg_clothes_item {
+    background: rgba(0, 0, 0, 0.3);
+    padding: 4px 8px;
+    margin: 3px 0;
+    border-radius: 3px;
+    font-size: 11px;
+    color: #ddd;
+}
+
+/* Debug Panel */
+.rpg_debug_panel {
+    background: rgba(100, 0, 0, 0.2);
+    border: 1px solid #ff4444;
+    border-radius: 4px;
+    padding: 10px;
+    margin-top: 10px;
+}
+
+.rpg_debug_panel h4 {
+    margin: 0 0 10px 0;
+    color: #ff6666;
+    font-size: 12px;
+}
+
+.rpg_debug_panel pre {
+    background: #000;
+    color: #0f0;
+    padding: 10px;
+    border-radius: 3px;
+    overflow-x: auto;
+    font-size: 11px;
+    max-height: 300px;
+    overflow-y: auto;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+    .rpg-state-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .rpg-state-panel {
+        max-width: 100%;
+    }
+}
+
+/* Mood Colors */
+.rpg-state-value[data-mood="happy"],
+.rpg-state-value[data-mood="excited"],
+.rpg-state-value[data-mood="joyful"] {
+    color: #4ade80;
+}
+
+.rpg-state-value[data-mood="sad"],
+.rpg-state-value[data-mood="depressed"],
+.rpg-state-value[data-mood="upset"] {
+    color: #60a5fa;
+}
+
+.rpg-state-value[data-mood="angry"],
+.rpg-state-value[data-mood="furious"] {
+    color: #f87171;
+}
+
+.rpg-state-value[data-mood="nervous"],
+.rpg-state-value[data-mood="anxious"] {
+    color: #fbbf24;
+}
+
+.rpg-state-value[data-mood="flirty"],
+.rpg-state-value[data-mood="romantic"],
+.rpg-state-value[data-mood="intimate"] {
+    color: #f472b6;
+}
+
+/* Intensity Colors */
+.rpg-state-value[data-intensity="calm"] {
+    color: #86efac;
+}
+
+.rpg-state-value[data-intensity="tense"] {
+    color: #fbbf24;
+}
+
+.rpg-state-value[data-intensity="intimate"] {
+    color: #f472b6;
+}
+
+.rpg-state-value[data-intensity="action"] {
+    color: #f87171;
+}
+
+/* Affection Bar */
+#rpg_affection {
+    position: relative;
+}
+
+#rpg_affection::after {
+    content: '';
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    height: 2px;
+    width: calc(var(--affection, 5) * 10%);
+    background: linear-gradient(90deg, #f87171, #f472b6);
+    border-radius: 1px;
+}

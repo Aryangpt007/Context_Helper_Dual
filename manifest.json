@@ -1,0 +1,12 @@
+{
+    "display_name": "RPG Character Chatbot - Two-LLM State Tracking",
+    "loading_order": 10,
+    "requires": [],
+    "optional": [],
+    "js": "index.js",
+    "css": "style.css",
+    "author": "Aryangpt007",
+    "version": "1.0.0",
+    "homePage": "https://github.com/Aryangpt007/Project_Smartex",
+    "description": "Advanced two-LLM system with persistent state tracking, memory compression, and detailed character management for immersive roleplay"
+}
