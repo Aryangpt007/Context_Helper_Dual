@@ -64,7 +64,7 @@ Perfect for NSFW/intimate scenes where clothing details matter!
 
 1. Open SillyTavern
 2. Go to **Extensions** → **Install Extension**
-3. Enter repository URL: `https://github.com/Aryangpt007/Project_Smartex`
+3. Enter repository URL: `https://github.com/Aryangpt007/Context_Helper_Dual`
 4. Click **Install**
 5. Restart SillyTavern (Ctrl+F5)
 
@@ -77,7 +77,7 @@ Perfect for NSFW/intimate scenes where clothing details matter!
 
 2. Clone or copy the extension:
    ```bash
-   git clone https://github.com/Aryangpt007/Project_Smartex st-rpg-chatbot
+   git clone https://github.com/Aryangpt007/Context_Helper_Dual
    ```
 
 3. Restart SillyTavern
@@ -213,7 +213,6 @@ Clothes:
 ## 💰 Smart Context Management (THE MONEY SAVER!)
 
 ### The Real Problem
-**Most extensions compress memory for LLM-A but LLM-B still receives the full chat history!**
 
 - Character card: 1000-2000 tokens
 - Long chat (100+ messages): 10,000+ tokens
@@ -275,7 +274,6 @@ SAVINGS: 86% reduction!
 | **Minimal** | 900 | $0.009 | **$0.90** | **$10.60 (92%)** |
 | **Aggressive** | 8,000 | $0.080 | **$8.00** | **$3.50 (30%)** |
 
-**With OpenRouter's Free Llama 3.2 for LLM-A: $1.60 total for 100 messages!**
 
 ### What Gets Lost? (Quality Check)
 
@@ -662,186 +660,14 @@ MIT License - See LICENSE file for details
 
 ---
 
-## Fixes Applied (Technical Details)
-
-### Issue 1: Extension Not Visible in SillyTavern
-**Problem**: Extension appeared in list but settings panel was invisible (404 errors)
-
-**Root Cause**: Using `$.get()` instead of SillyTavern's `renderExtensionTemplateAsync()`
-
-**Fix**:
-```javascript
-// BEFORE (Wrong)
-const settingsHtml = await $.get(`${extensionFolderPath}/settings.html`);
-
-// AFTER (Correct)
-const extensionName = "third-party/st-rpg-chatbot"; // Must include third-party/
-const settingsHtml = await renderExtensionTemplateAsync(extensionName, 'settings');
-```
-
-### Issue 2: Cannot Bypass SillyTavern's Connection
-**Problem**: Original design tried to replace SillyTavern's model entirely
-
-**Solution**: Two-LLM hybrid architecture
-- LLM-A makes separate API call for state tracking
-- Result injected into SillyTavern's prompt via `setExtensionPrompt()`
-- SillyTavern's configured model (LLM-B) receives enhanced context
-
-**Implementation**:
-```javascript
-// LLM-A analyzes
-const analysis = await processWithLLMA(userMessage);
-
-// Inject context for LLM-B
-const context = getContext();
-context.setExtensionPrompt(
-    MODULE_NAME, 
-    extensionPromptText, 
-    extension_prompt_types.IN_PROMPT, 
-    0
-);
-```
-
-### Issue 3: Settings Not Persisting
-**Problem**: Settings/state lost on chat switch
-
-**Fix**:
-```javascript
-// Save state to chat metadata
-function saveStateToMetadata() {
-    chat_metadata.rpg_chatbot = {
-        state: stateManager.state,
-        messageHistory: stateManager.messageHistory,
-        compressedMemories: stateManager.compressedMemories
-    };
-    saveMetadataDebounced();
-}
-
-// Load state on chat change
-eventSource.on(event_types.CHAT_CHANGED, () => {
-    loadStateFromMetadata();
-});
-```
-
-### Issue 4: Message Interception Not Working
-**Problem**: Extension couldn't intercept messages
-
-**Fix**: Use SillyTavern's proper event system
-```javascript
-eventSource.on(event_types.MESSAGE_SENT, async (data) => {
-    if (extension_settings[extensionName].enabled && data) {
-        await processWithLLMA(data);
-    }
-});
-```
-
-### Issue 5: State Panel Disappearing
-**Problem**: Panel disappeared when switching chats
-
-**Fix**: Move to persistent `#sheld` container
-```javascript
-// BEFORE: Appended to temporary container
-$("#extensions_settings2").append(statePanelHtml);
-
-// AFTER: Append to persistent sidebar
-const sheld = $("#sheld");
-if (sheld.length > 0) {
-    sheld.append(statePanelHtml);
-}
-```
-
-### Issue 6: "state.pov is undefined" Error
-**Problem**: Old saved states missing new POV/conversation properties
-
-**Fix**: Auto-merge old state with new default structure
-```javascript
-function getDefaultState() {
-    return {
-        character: { mood: "neutral", affection: 5, energy: 10 },
-        appearance: { clothes: {}, clothes_details: {}, body_exposure: "none" },
-        environment: { location: "unknown", time_of_day: "unknown" },
-        scene: { intensity: "calm", POV: {} },
-        conversation: { mode: "in_person", pacing: "normal" },
-        pov: { current_character: "", awareness_level: "full" }
-    };
-}
-
-function mergeState(savedState, defaultState) {
-    // Deep merge with safe fallbacks
-    return _.merge({}, defaultState, savedState);
-}
-```
-
-### Issue 7: Bot Always Writes Long Paragraphs
-**Problem**: No context awareness, phone calls had visual descriptions
-
-**Fix**: Conversation mode detection + dictionary-based enforcement
-```javascript
-// LLM-A detects mode
-{
-  "conversation.mode": "phone_call",
-  "conversation.pacing": "rapid_fire",
-  "conversation.response_length": "brief"
-}
-
-// JavaScript fetches instructions from dictionary
-const modeConfig = CONVERSATION_MODES["phone_call"];
-extensionPromptText += modeConfig.instruction;
-// "CRITICAL: User can ONLY hear audio. NO visual descriptions..."
-```
-
-### Issue 8: No Clothing Details for NSFW
-**Problem**: LLM-A wasn't tracking individual clothing items, no underwear info
-
-**Fix**: Enhanced clothing system with examples
-```javascript
-// Each item tracked individually
-{
-  "appearance.clothes_details.blouse": {
-    "state": "worn",
-    "position": "normal",
-    "fastened": false, // unbuttoned
-    "condition": "pristine",
-    "visibility": "visible"
-  },
-  "appearance.clothes_details.bra": {
-    "state": "worn",
-    "visibility": "visible" // now visible through unbuttoned blouse
-  },
-  "appearance.body_exposure": "partial"
-}
-```
-
-### Issue 9: Prompt Too Verbose (LLM-A Gets Lost)
-**Problem**: ~2500 token prompt caused context confusion, high costs
-
-**Fix**: Dictionary-based optimization
-- Moved mode/pacing descriptions to JavaScript dictionaries
-- LLM-A receives concise lists, returns mode name
-- JavaScript fetches full instructions, sends to LLM-B
-- Result: 600 tokens (76% reduction)
-
----
-
 ## Roadmap (Future Enhancements)
 
 Inspired by GuidedGenerations Extension:
-- [ ] **Preset Switching**: Use different SillyTavern presets per feature
 - [ ] **Prompt Overrides**: Customize LLM-A prompt templates per user
-- [ ] **Guided Response**: Button to inject instructions before AI reply
-- [ ] **Guided Swipe**: Regenerate with new guidance
-- [ ] **Edit/Show/Flush Guides**: UI to manage persistent context injections
-- [ ] **Input Recovery**: Restore original input after guided operations
 - [ ] **Visual State Timeline**: See state changes over time
 - [ ] **Custom Condition Triggers**: Auto-trigger actions when state reaches threshold
 - [ ] **Multi-Character Tracking**: Track multiple characters simultaneously
 - [ ] **Export/Import States**: Save and load state snapshots
-
-Community requests:
-- [ ] Character Card V2 import integration
-- [ ] Voice integration for audio modes
-- [ ] Image generation for scenes
-- [ ] Lorebook integration for world state
 
 ---
 
@@ -860,7 +686,7 @@ Community requests:
 **A:** Currently tracks one primary character. Multi-character support planned for future release.
 
 ### Q: Can I customize what gets tracked?
-**A:** Yes! Edit `index.js` to add custom state variables. GUI for customization coming in future update.
+**A:** No.
 
 ### Q: Why use two models instead of one?
 **A:** Separation of concerns:
@@ -869,52 +695,4 @@ Community requests:
 - Filters irrelevant context (saves tokens)
 - Can use free model for tracking, premium for roleplay
 
-### Q: What if LLM-A makes mistakes?
-**A:** Use Debug Mode to see LLM-A's analysis. You can manually correct state in the state panel (future feature).
-
 ---
-
-For standalone CLI version, see the main [Project_Smartex repository](https://github.com/Aryangpt007/Project_Smartex).
-
-## Contributing
-
-Contributions welcome! Please:
-1. Fork the repository
-2. Create a feature branch
-3. Submit a pull request
-4. Include tests and documentation
-
-## License
-
-MIT License - See LICENSE file for details
-
-## Credits
-
-- Built with the two-LLM architecture from Project_Smartex
-- Inspired by character bots from Character.AI, Chub.ai, Janitor.AI
-- Thanks to SillyTavern team for the excellent framework
-
-## Changelog
-
-### v1.0.0 (2025-10-27)
-- Initial release
-- Two-LLM architecture implementation
-- Detailed clothes tracking
-- Memory compression
-- State panel UI
-- Debug mode
-- Support for OpenAI, Anthropic, OpenRouter
-
-## Roadmap
-
-- [ ] Character Card V2 import within SillyTavern
-- [ ] Visual state timeline
-- [ ] Custom condition triggers UI
-- [ ] Multi-character scene tracking
-- [ ] Voice integration
-- [ ] Image generation for scenes
-- [ ] Export/import state snapshots
-
----
-
-For standalone CLI version, see the main [Project_Smartex repository](https://github.com/Aryangpt007/Project_Smartex).
