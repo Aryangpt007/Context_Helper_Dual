@@ -64,7 +64,7 @@ Perfect for NSFW/intimate scenes where clothing details matter!
 
 1. Open SillyTavern
 2. Go to **Extensions** → **Install Extension**
-3. Enter repository URL: `https://github.com/Aryangpt007/Context_Helper_Dual`
+3. Enter repository URL: `https://github.com/Aryangpt007/st-rpg-chatbot`
 4. Click **Install**
 5. Restart SillyTavern (Ctrl+F5)
 
@@ -77,7 +77,7 @@ Perfect for NSFW/intimate scenes where clothing details matter!
 
 2. Clone or copy the extension:
    ```bash
-   git clone https://github.com/Aryangpt007/Context_Helper_Dual
+   git clone https://github.com/Aryangpt007/st-rpg-chatbot
    ```
 
 3. Restart SillyTavern
