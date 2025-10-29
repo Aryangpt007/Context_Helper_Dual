@@ -20,10 +20,7 @@ An advanced two-LLM architecture for immersive roleplay with persistent state tr
 
 ### 🔍 Smart Context Management
 - **Memory Compression**: Automatically summarizes old messages to maintain long-term context
-- **Adaptive Response Style**: Detects when to use:
-  - Short responses (phone conversations, quick exchanges)
-  - Balanced responses (normal conversation)
-  - Detailed responses (action scenes, intense narration)
+- **Adaptive Response Style**: Detects when to use short, balanced, or detailed responses
 - **POV Detection**: Automatically switches perspective when another character takes focus
 
 ### 👗 Detailed State Tracking
@@ -31,7 +28,7 @@ An advanced two-LLM architecture for immersive roleplay with persistent state tr
 - **Appearance**: Individual clothing items with state, position, condition, fastened status
 - **Environment**: Location, time of day, lighting
 - **Scene**: Characters present, activity, intensity
-- **Conversation**: Style, exchange count
+- **Conversation**: Style, tone
 
 ### 🎭 Conversation Modes (Auto-Detected)
 - **in_person**: Full roleplay with all sensory details
@@ -70,18 +67,12 @@ Perfect for NSFW/intimate scenes where clothing details matter!
 
 ### Method 2: Manual Installation
 
-1. Navigate to SillyTavern directory:
-   ```
-   SillyTavern/public/scripts/extensions/third-party/
-   ```
-
+1. Navigate to `SillyTavern/public/scripts/extensions/third-party/`
 2. Clone or copy the extension:
    ```bash
    git clone https://github.com/Aryangpt007/st-rpg-chatbot
    ```
-
 3. Restart SillyTavern
-
 4. Enable in **Extensions** → **RPG Character Chatbot**
 
 ## Configuration
@@ -240,9 +231,9 @@ The extension **replaces SillyTavern's full context** with:
    - Summaries of earlier conversations
    - Preserves major plot points
 
-### Modes Explained
+### Token Savings Example
 
-**Balanced** (Recommended - 50% savings):
+**Balanced Mode** (Recommended - 86% savings):
 ```
 Character Card: 300 tokens (compressed)
 State Context: 200 tokens (mood, affection, clothes, location)
@@ -255,192 +246,19 @@ vs Normal: ~11,500 tokens
 SAVINGS: 86% reduction!
 ```
 
-**Minimal** (70% savings):
+**Minimal** (92% savings):
 - Keeps only 3 recent messages
 - No compressed history
 - ~900 tokens per message
 
-**Aggressive** (30% savings):
+**Aggressive** (74% savings):
 - Keeps 10 recent messages
 - Full compressed history
-- ~8,000 tokens per message
+- ~3,000 tokens per message
 
-### Cost Comparison (100 messages with GPT-4)
+## Architecture Details
 
-| Mode | Tokens/msg | Cost/msg | Cost/100 msgs | Savings |
-|------|------------|----------|---------------|---------|
-| **Off** (full history) | 11,500 | $0.115 | **$11.50** | - |
-| **Balanced** ⭐ | 1,600 | $0.016 | **$1.60** | **$9.90 (86%)** |
-| **Minimal** | 900 | $0.009 | **$0.90** | **$10.60 (92%)** |
-| **Aggressive** | 8,000 | $0.080 | **$8.00** | **$3.50 (30%)** |
-
-
-### What Gets Lost? (Quality Check)
-
-✅ **Preserved**:
-- Character personality (from compressed card)
-- Current mood, affection, energy
-- Recent conversation (last 6 messages)
-- Important events (tracked in state.history)
-- Clothing details (fully tracked)
-- Location, time, scene intensity
-
-❌ **Compressed**:
-- Lengthy character backstory (kept in summary)
-- Old messages (summarized, not lost)
-- Redundant descriptions
-
-**Quality impact**: Minimal! State tracking preserves what matters.
-
-## Cost Efficiency
-
-### Optimized Token Usage
-- **LLM-A prompt**: ~600 tokens (reduced from ~2500 tokens - 76% optimization!)
-- **Dictionary-based system**: Mode/pacing descriptions stored in JavaScript, not sent to LLM
-- **Smart context replacement**: LLM-B receives compressed context (86% reduction!)
-
-### Estimated Costs per 100 Messages
-
-**LLM-A (State Tracking)**:
-- Free Llama via OpenRouter: **$0.00**
-- GPT-3.5-turbo: ~$0.165
-- Claude Haiku: ~$0.10
-
-**LLM-B (Main Roleplay) with Smart Context**:
-| Model | Without Compression | With Balanced Mode | Savings |
-|-------|-------------------|-------------------|---------|
-| GPT-4 | $11.50 | **$1.60** | **$9.90** |
-| Claude 3.5 Sonnet | $34.50 | **$4.80** | **$29.70** |
-| GPT-3.5-turbo | $1.15 | **$0.16** | **$0.99** |
-
-**Total Cost (LLM-A + LLM-B) per 100 messages:**
-- **Best Budget**: Free Llama (LLM-A) + GPT-3.5 (LLM-B) = **$0.16** 🎉
-- **Best Quality**: GPT-3.5 (LLM-A) + Claude 3.5 (LLM-B) = **$4.97**
-- **Premium Setup**: GPT-4 (both) = **$1.77**
-
-**Old way without extension**: GPT-4 alone = **$11.50** per 100 messages
-
-## Usage Examples
-
-### Example 1: Intimate Scene with Clothing Tracking
-
-**User**: "I slowly unbutton her blouse"
-
-**LLM-A tracks**:
-```json
-{
-  "appearance.clothes_details.blouse": {
-    "state": "worn",
-    "fastened": false,
-    "condition": "pristine"
-  },
-  "appearance.clothes_details.bra": {
-    "visibility": "visible"
-  },
-  "appearance.body_exposure": "partial",
-  "scene.intensity": "intimate"
-}
-```
-
-**LLM-B receives**:
-```
-CLOTHING STATE:
-Wearing: blouse [unfastened], skirt, bra [now visible]
-⚠️ Underwear visible: bra
-Body exposure: partial
-Scene intensity: intimate
-```
-
-**Result**: Character response reflects the specific clothing state accurately!
-
-### Example 2: Phone Call Mode
-
-**User**: "I call Sarah on her cell"
-
-**LLM-A sets**: `mode: phone_call, pacing: normal, length: brief`
-
-**LLM-B receives**:
-```
-CRITICAL: User can ONLY hear audio. NO visual descriptions.
-Keep response BRIEF: 1-2 sentences max.
-```
-
-**Character response**: 
-> "Hey! *cheerful voice* Oh, I was just thinking about you. What's up?"
-
-(Notice: NO visual descriptions, NO actions, just voice and tone!)
-
-### Example 3: Text Message
-
-**User**: I text her "want to grab coffee?"
-
-**LLM-A sets**: `mode: text_message, pacing: rapid_fire, length: brief`
-
-**Character response**:
-> "yeah sounds good! when?"
-
-(Notice: NO narration, NO actions, just the text message content!)
-
-## Troubleshooting
-
-### Extension doesn't appear in menu
-- Check files are in `SillyTavern/public/scripts/extensions/third-party/st-rpg-chatbot/`
-- Refresh SillyTavern (Ctrl+F5)
-- Check browser console (F12) for errors
-
-### LLM-A calls fail
-- Verify API key is correct (no extra spaces)
-- Check API provider spelling matches exactly
-- Ensure you have API credits/quota
-- Check browser console for detailed error messages
-
-### State not persisting between chats
-- State is saved per-chat in chat metadata
-- Each chat has its own independent state
-- Use "Reset State" button to clear current chat's state
-
-### Bot still writes long paragraphs during phone calls
-1. Enable Debug Mode in extension settings
-2. Send a test message
-3. Check console for `[RPG Chatbot] LLM-A Analysis`
-4. Verify `conversation.mode` is set to `phone_call`
-5. Check that context injection shows mode restrictions
-
-### Templates not loading (404 errors)
-- Extension name MUST be `third-party/st-rpg-chatbot` in `index.js`
-- Check that files are in the correct folder structure
-- Restart SillyTavern completely
-
-### "state.pov is undefined" error
-- This was fixed in recent version
-- Hard refresh SillyTavern (Ctrl+F5)
-- Extension now auto-merges old states with new structure
-
-## Advanced Features
-
-### Custom State Variables
-
-The extension tracks:
-- **Character**: mood, mood_intensity, affection, energy, emotional_state
-- **Appearance**: clothes, clothes_details, body_exposure
-- **Environment**: location, time_of_day, lighting, privacy_level
-- **Scene**: characters_present, activity, POV character, intensity
-- **Conversation**: mode, pacing, exchange_style, response_length
-- **POV**: current_character, sensory awareness, awareness_level
-
-Edit `index.js` to add custom tracking:
-```javascript
-stateManager = {
-    state: {
-        character: { mood: "neutral", custom_metric: 0 },
-        // ... add your own fields
-    }
-}
-```
-
-### Architecture Details
-
-#### Dictionary-Based Optimization
+### Dictionary-Based Optimization
 
 The extension uses a **dictionary-based system** to reduce prompt size:
 
@@ -520,58 +338,6 @@ Enable to see:
 4. Create key
 5. Use models: `claude-3-haiku-20240307`, `claude-3-5-sonnet-20241022`
 
-## Support
-
-- **GitHub Issues**: https://github.com/Aryangpt007/Project_Smartex/issues
-- **Documentation**: See this README
-- **Discord**: Post in SillyTavern extensions channel
-
-## Contributing
-
-Contributions welcome! Please:
-1. Fork the repository
-2. Create a feature branch
-3. Submit a pull request
-4. Include tests and documentation
-
-## License
-
-MIT License - See LICENSE file for details
-
-## Credits
-
-- Built with the two-LLM architecture from Project_Smartex
-- Inspired by character bots from Character.AI, Chub.ai, Janitor.AI
-- Thanks to SillyTavern team for the excellent framework
-- Learned from GuidedGenerations Extension by Samueras
-
----
-
-### Custom State Variables
-
-The extension tracks these state categories:
-- `character`: mood, affection, energy
-- `appearance`: clothes, clothes_details, body_exposure
-- `environment`: location, time_of_day, lighting
-- `scene`: characters_present, activity, intensity
-- `conversation`: style, tone
-
-### Memory Compression
-
-After 20 messages (configurable), old messages are automatically compressed:
-- Last 6 messages kept in full detail
-- Older messages summarized by LLM-A
-- Important moments flagged separately
-- Reduces token costs significantly
-
-### Conversation Style Detection
-
-LLM-A automatically detects:
-- Quick back-and-forth dialogue → short responses
-- Phone/text conversations → brief format
-- Detailed narration → multi-paragraph responses
-- Action scenes → dynamic, fast-paced
-
 ## Development
 
 ### File Structure
@@ -592,84 +358,6 @@ The extension exposes hooks for:
 - Additional LLM providers
 - Custom UI panels
 - Event listeners
-
-## Support
-
-- **GitHub Issues**: https://github.com/Aryangpt007/Project_Smartex/issues
-- **Documentation**: See main repo README
-- **Discord**: Post in SillyTavern extensions channel
-
-## Contributing
-
-Contributions welcome! Please:
-1. Fork the repository
-2. Create a feature branch
-3. Submit a pull request
-4. Include tests and documentation
-
-## License
-
-MIT License - See LICENSE file for details
-
-## Credits
-
-- Built with the two-LLM architecture from Project_Smartex
-- Inspired by character bots from Character.AI, Chub.ai, Janitor.AI
-- Thanks to SillyTavern team for the excellent framework
-- Learned from GuidedGenerations Extension by Samueras
-
----
-
-## Changelog
-
-### v1.2.0 (2025-10-29)
-**Prompt Optimization & Dictionary System**
-- ✅ Reduced LLM-A prompt from ~2500 to ~600 tokens (76% reduction)
-- ✅ Implemented dictionary-based mode/pacing system
-- ✅ 63% lower LLM-A costs per message
-- ✅ Faster LLM-A processing with smaller prompts
-- ✅ Easier maintenance (change modes in one place)
-
-### v1.1.0 (2025-10-28)
-**Conversation Modes & Enhanced State Tracking**
-- ✅ Added 6 auto-detected conversation modes:
-  - `in_person`: Full roleplay (default)
-  - `phone_call`: Audio only, NO visual descriptions
-  - `text_message`: Text only, NO actions
-  - `video_call`: Camera view only
-  - `letter`: Written correspondence
-  - `thoughts`: Internal monologue
-- ✅ Added 4 pacing types: rapid_fire, normal, slow_burn, contemplative
-- ✅ POV switching: Auto-detects when character leaves scene
-- ✅ Comprehensive clothing tracking:
-  - Individual item tracking (state/position/fastened/condition/visibility)
-  - Body exposure levels (none/partial/significant/intimate)
-  - Perfect for NSFW scenes
-- ✅ Fixed: State panel persistence (#sheld container)
-- ✅ Fixed: "state.pov undefined" error with state merging
-- ✅ Fixed: First message initialization issue
-
-### v1.0.0 (2025-10-27)
-**Initial Release**
-- ✅ Two-LLM architecture (LLM-A tracks state, LLM-B generates roleplay)
-- ✅ Basic state tracking (mood, affection, location, clothes)
-- ✅ Memory compression for long chats
-- ✅ State panel UI
-- ✅ Debug mode
-- ✅ Support for OpenAI, Anthropic, OpenRouter
-
----
-
-## Roadmap (Future Enhancements)
-
-Inspired by GuidedGenerations Extension:
-- [ ] **Prompt Overrides**: Customize LLM-A prompt templates per user
-- [ ] **Visual State Timeline**: See state changes over time
-- [ ] **Custom Condition Triggers**: Auto-trigger actions when state reaches threshold
-- [ ] **Multi-Character Tracking**: Track multiple characters simultaneously
-- [ ] **Export/Import States**: Save and load state snapshots
-
----
 
 ## FAQ
 
@@ -695,4 +383,63 @@ Inspired by GuidedGenerations Extension:
 - Filters irrelevant context (saves tokens)
 - Can use free model for tracking, premium for roleplay
 
----
+## Changelog
+
+### v1.2.0 (2025-10-29)
+**Prompt Optimization & Dictionary System**
+- ✅ Reduced LLM-A prompt from ~2500 to ~600 tokens (76% reduction)
+- ✅ Implemented dictionary-based mode/pacing system
+- ✅ 63% lower LLM-A costs per message
+- ✅ Faster LLM-A processing with smaller prompts
+- ✅ Easier maintenance (change modes in one place)
+
+### v1.1.0 (2025-10-28)
+**Conversation Modes & Enhanced State Tracking**
+- ✅ Added 6 auto-detected conversation modes
+- ✅ Added 4 pacing types: rapid_fire, normal, slow_burn, contemplative
+- ✅ POV switching: Auto-detects when character leaves scene
+- ✅ Comprehensive clothing tracking with body exposure levels
+- ✅ Fixed: State panel persistence and initialization issues
+
+### v1.0.0 (2025-10-27)
+**Initial Release**
+- ✅ Two-LLM architecture (LLM-A tracks state, LLM-B generates roleplay)
+- ✅ Basic state tracking (mood, affection, location, clothes)
+- ✅ Memory compression for long chats
+- ✅ State panel UI
+- ✅ Debug mode
+- ✅ Support for OpenAI, Anthropic, OpenRouter
+
+## Roadmap (Future Enhancements)
+
+Inspired by GuidedGenerations Extension:
+- [ ] **Prompt Overrides**: Customize LLM-A prompt templates per user
+- [ ] **Visual State Timeline**: See state changes over time
+- [ ] **Custom Condition Triggers**: Auto-trigger actions when state reaches threshold
+- [ ] **Multi-Character Tracking**: Track multiple characters simultaneously
+- [ ] **Export/Import States**: Save and load state snapshots
+
+## Support
+
+- **GitHub Issues**: https://github.com/Aryangpt007/Project_Smartex/issues
+- **Documentation**: See this README
+- **Discord**: Post in SillyTavern extensions channel
+
+## Contributing
+
+Contributions welcome! Please:
+1. Fork the repository
+2. Create a feature branch
+3. Submit a pull request
+4. Include tests and documentation
+
+## License
+
+MIT License - See LICENSE file for details
+
+## Credits
+
+- Built with the two-LLM architecture from Project_Smartex
+- Inspired by character bots from Character.AI, Chub.ai, Janitor.AI
+- Thanks to SillyTavern team for the excellent framework
+- Learned from GuidedGenerations Extension by Samueras
